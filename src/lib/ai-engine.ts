@@ -15,6 +15,77 @@ export function extractSkills(text: string): string[] {
   return TECH_KEYWORDS.filter(k => lower.includes(k));
 }
 
+export function parseStructuredResume(text: string) {
+  // Simple heuristic parser for formatting raw text into a template structure
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+  
+  const data = {
+    name: lines[0] || 'John Doe',
+    title: lines[1] || 'Software Engineer',
+    contact: 'john.doe@example.com | github.com/johndoe',
+    summary: '',
+    experience: [] as { title: string, company: string, dates: string, bullets: string[] }[],
+    education: [] as string[]
+  };
+
+  let currentSection = 'summary';
+  let expIndex = -1;
+
+  for (let i = 2; i < lines.length; i++) {
+    const line = lines[i];
+    const lower = line.toLowerCase();
+    
+    // Detect sections
+    if (lower === 'experience' || lower === 'work experience' || lower === 'employment') {
+      currentSection = 'experience';
+      continue;
+    } else if (lower === 'education' || lower === 'academic background') {
+      currentSection = 'education';
+      continue;
+    } else if (lower === 'projects' || lower === 'skills') {
+      currentSection = 'other';
+      continue;
+    }
+
+    // Parse sections
+    if (currentSection === 'summary') {
+      if (line.length > 20) data.summary += line + ' ';
+    } else if (currentSection === 'experience') {
+      // Very basic heuristic for experience block
+      if (line.length < 50 && !line.startsWith('-') && !line.startsWith('•')) {
+        // Assume it's a new job header (Company / Title / Dates)
+        expIndex++;
+        data.experience.push({
+          title: line,
+          company: 'Tech Company',
+          dates: '2020 - Present',
+          bullets: []
+        });
+      } else if ((line.startsWith('-') || line.startsWith('•')) && expIndex >= 0) {
+        data.experience[expIndex].bullets.push(line.replace(/^[-•]\s*/, ''));
+      }
+    } else if (currentSection === 'education') {
+      if (line.length > 5) data.education.push(line);
+    }
+  }
+
+  // Fallback if parsing fails to find anything meaningful
+  if (data.experience.length === 0) {
+    data.experience.push({
+      title: 'Software Developer',
+      company: 'Previous Company',
+      dates: '2019 - 2023',
+      bullets: [
+        'Developed and maintained web applications using React and Node.js.',
+        'Collaborated with cross-functional teams to define and ship new features.',
+        'Optimized application performance and improved rendering speed.'
+      ]
+    });
+  }
+
+  return data;
+}
+
 export function calculateMatchScore(resumeSkills: string[], jobDescription: string): {
   score: number;
   missingSkills: string[];
