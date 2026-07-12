@@ -5,6 +5,9 @@ import { extractSkills } from '@/lib/ai-engine'
 import { getOrCreateUser } from '@/app/actions'
 import { revalidatePath } from 'next/cache'
 
+const pdfParse = require('pdf-parse')
+const mammoth = require('mammoth')
+
 
 export async function uploadResume(formData: FormData) {
   const text = formData.get('resumeText') as string
@@ -38,14 +41,12 @@ export async function parseFileAction(formData: FormData) {
     let extractedText = ''
 
     if (file.type === 'application/pdf') {
-      const pdfParse = require('pdf-parse')
       const data = await pdfParse(buffer)
       extractedText = data.text
     } else if (
       file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
       file.name.endsWith('.docx')
     ) {
-      const mammoth = require('mammoth')
       const data = await mammoth.extractRawText({ buffer })
       extractedText = data.value
     } else {
