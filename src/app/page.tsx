@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const { user, activeJobs, dsaSolved, recentJobs } = await getDashboardStats()
 
