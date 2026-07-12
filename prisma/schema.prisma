@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String   @default("User")
+  resumeText     String?
+  baseSkills     String?  // JSON string
+  experienceLevel String   @default("Entry Level")
+  readinessScore Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  jobs           Job[]
+}
+
+model Job {
+  id             String   @id @default(cuid())
+  userId         String
+  title          String
+  company        String
+  description    String
+  matchScore     Int      @default(0)
+  status         String   @default("Saved") // Saved, Applying, Interviewing, Offered, Rejected
+  salaryInsights String?
+  skillGap       String?  // JSON string of missing skills
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tailoredResume TailoredResume?
+  interviews     MockInterview[]
+}
+
+model TailoredResume {
+  id             String   @id @default(cuid())
+  jobId          String   @unique
+  atsScore       Int      @default(0)
+  missingKeywords String? // JSON string
+  suggestions    String?  // JSON string (bullet point changes)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  job            Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model MockInterview {
+  id             String   @id @default(cuid())
+  jobId          String
+  type           String   // HR, Technical, Behavioral, Project
+  questions      String   // JSON string of questions
+  answers        String?  // JSON string of answers
+  feedback       String?  // JSON string of AI feedback and score
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  job            Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model DSAQuestion {
+  id             String   @id @default(cuid())
+  company        String?
+  role           String?
+  title          String
+  difficulty     String   // Easy, Medium, Hard
+  description    String
+  solutionUrl    String?
+  status         String   @default("Unsolved") // Unsolved, Solved
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
