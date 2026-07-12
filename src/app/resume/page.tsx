@@ -21,6 +21,9 @@ export default function ResumePage() {
       if (data.resumeText) setText(data.resumeText)
       if (data.skills) setSkills(data.skills)
       setInitialLoading(false)
+    }).catch(err => {
+      console.error("Failed to load resume data:", err)
+      setInitialLoading(false)
     })
   }, [])
 
