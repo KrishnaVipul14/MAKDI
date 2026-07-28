@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Inter', sans-serif; width: 300px; padding: 15px; margin: 0; background: #DFF5E1; color: #1A1A1A; }
+    h2 { margin-top: 0; color: #1B7A3D; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+    button { 
+      background: #1B7A3D; color: white; border: none; padding: 10px; width: 100%; 
+      border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px;
+    }
+    button:hover { background: #0F5C2C; }
+    .status { margin-top: 10px; font-size: 12px; color: #666; text-align: center; }
+    input { width: 100%; padding: 8px; margin-top: 10px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <h2>🕸️ MAKDI Autofill</h2>
+  <div id="auth-section">
+    <p style="font-size: 13px;">Please enter your MAKDI auth token to connect.</p>
+    <input type="text" id="token-input" placeholder="Paste JWT token here..." />
+    <button id="save-token">Save Token</button>
+  </div>
+  
+  <div id="main-section" style="display: none;">
+    <p style="font-size: 13px;">Ready to autofill this job application?</p>
+    <button id="autofill-btn">Autofill Application Form</button>
+    <p class="status" id="status-text"></p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

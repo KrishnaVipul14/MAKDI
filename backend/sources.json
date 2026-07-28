@@ -1,0 +1,6 @@
+{
+  "arbeitnow": "https://www.arbeitnow.com/api/job-board-api",
+  "remoteok": "https://remoteok.com/api",
+  "lever_companies": ["netflix", "spotify", "notion"],
+  "greenhouse_companies": ["airbnb", "discord", "dropbox"]
+}

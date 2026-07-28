@@ -1,0 +1,21 @@
+[
+  "javascript", "python", "java", "c++", "c#", "ruby", "php", "go", "rust", "swift",
+  "kotlin", "typescript", "html", "css", "sql", "nosql", "mongodb", "postgresql",
+  "mysql", "react", "angular", "vue", "svelte", "next.js", "node.js", "express",
+  "django", "flask", "spring boot", "ruby on rails", "laravel", "docker", "kubernetes",
+  "aws", "azure", "gcp", "git", "linux", "agile", "scrum", "machine learning",
+  "data science", "artificial intelligence", "deep learning", "nlp", "computer vision",
+  "data analysis", "project management", "communication", "leadership", "problem solving",
+  "teamwork", "time management", "critical thinking", "adaptability", "creativity",
+  "customer service", "sales", "marketing", "seo", "content writing", "social media",
+  "graphic design", "ui/ux", "figma", "adobe creative suite", "financial analysis",
+  "accounting", "human resources", "recruiting", "operations", "supply chain",
+  "logistics", "quality assurance", "testing", "cybersecurity", "networking",
+  "cloud computing", "devops", "ci/cd", "restful apis", "graphql", "microservices",
+  "architecture", "software engineering", "web development", "mobile development",
+  "frontend", "backend", "full stack", "database administration", "system administration",
+  "it support", "business analysis", "product management", "scrum master", "product owner",
+  "business intelligence", "data engineering", "big data", "hadoop", "spark", "kafka",
+  "tableau", "power bi", "excel", "word", "powerpoint", "salesforce", "hubspot",
+  "zendesk", "jira", "trello", "asana", "slack", "zoom", "microsoft teams"
+]
