@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --makdi-primary: #1B7A3D;
+  --makdi-primary-hover: #0F5C2C;
+  --makdi-bg-light: #DFF5E1;
+  --makdi-white: #FFFFFF;
+  --makdi-text: #1A1A1A;
+  --makdi-border: #E0E0E0;
+  --font-main: 'Inter', sans-serif;
+  
+  --background: var(--makdi-bg-light);
+  --foreground: var(--makdi-text);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-main);
+}
