@@ -115,6 +115,7 @@ export default function Dashboard() {
               )}
 
               <div className="flex gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`https://logo.clearbit.com/${job.company?.toLowerCase().replace(/\s+/g, '')}.com`} onError={(e) => (e.currentTarget.style.display = 'none')} className="w-12 h-12 rounded-lg border object-contain bg-white" alt="logo"/>
                 
                 <div className="flex-1">

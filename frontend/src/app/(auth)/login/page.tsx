@@ -86,7 +86,7 @@ export default function Login() {
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-makdi-primary font-medium hover:underline">
             Sign up for free
           </Link>
