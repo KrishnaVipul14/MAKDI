@@ -37,6 +37,7 @@ CREATE TABLE jobs (
   requirements_text TEXT, min_experience REAL,
   education_required TEXT, salary_range TEXT,
   apply_url TEXT, posted_date DATETIME,
+  company_tier TEXT DEFAULT 'unverified',
   scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(external_id, source)
 );

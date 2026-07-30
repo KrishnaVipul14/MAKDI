@@ -1,3 +1,8 @@
+const { GoogleGenAI } = require('@google/genai');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
 async function creativelyRewordBullet(originalBullet, jdKeywordsRelevantToThisBullet, jobTitle) {
   const prompt = `You are editing ONE bullet point from a resume. Rewrite it to sound more impactful and to naturally incorporate relevant terminology from a job description — WITHOUT changing any fact, number, company name, or claim.
 
@@ -15,24 +20,20 @@ TARGET JOB TITLE: ${jobTitle}
 Return ONLY valid JSON: {"reworded": "..."}`;
 
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama3.2:3b",
-        prompt,
-        format: "json",
-        stream: false,
-        options: { temperature: 0.6 }
-      })
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-lite',
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.6
+      }
     });
     
-    if (!response.ok) throw new Error('Ollama connection failed');
-    const data = await response.json();
-    return JSON.parse(data.response).reworded || originalBullet;
+    const text = response.text;
+    return JSON.parse(text).reworded || originalBullet;
   } catch (err) {
-    console.error('Ollama Reword Error:', err.message);
-    return originalBullet; // Fallback instantly if Ollama is off
+    console.error('Gemini Reword Error:', err.message);
+    return originalBullet; // Fallback instantly if Gemini fails
   }
 }
 
@@ -49,23 +50,19 @@ Do NOT invent any other companies, achievements, or numbers. Just weave these fa
 Return ONLY valid JSON: {"summary": "..."}`;
 
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama3.2:3b",
-        prompt,
-        format: "json",
-        stream: false,
-        options: { temperature: 0.7 }
-      })
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-lite',
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.7
+      }
     });
     
-    if (!response.ok) throw new Error('Ollama connection failed');
-    const data = await response.json();
-    return JSON.parse(data.response).summary || fallback;
+    const text = response.text;
+    return JSON.parse(text).summary || fallback;
   } catch (err) {
-    console.error('Ollama Summary Error:', err.message);
+    console.error('Gemini Summary Error:', err.message);
     return fallback;
   }
 }

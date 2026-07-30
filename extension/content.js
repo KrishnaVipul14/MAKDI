@@ -16,6 +16,27 @@ chrome.storage.onChanged.addListener((changes) => {
     makdiToken = changes.makdiToken.newValue;
     fetchProfileData();
   }
+  if (changes.currentTailoredPdfUrl && changes.currentTailoredPdfUrl.newValue) {
+    currentTailoredPdfUrl = changes.currentTailoredPdfUrl.newValue;
+    updateResumeStatusUI();
+  }
+});
+
+// Communication with web app dashboard
+window.addEventListener("message", (event) => {
+  if (event.data?.type === "MAKDI_EXTENSION_PING") {
+    window.postMessage({ type: "MAKDI_EXTENSION_PONG" }, "*");
+  }
+  
+  if (event.data?.type === "MAKDI_SET_CONTEXT") {
+    const payload = event.data.payload;
+    if (payload.tailoredPdfUrl) {
+      chrome.storage.local.set({ 
+        currentTailoredPdfUrl: payload.tailoredPdfUrl,
+        currentJobContext: payload 
+      });
+    }
+  }
 });
 
 async function fetchProfileData() {
@@ -117,18 +138,31 @@ async function fetchTailoredResume(jobTitle) {
     
     if (tailorData.pdfUrl) {
       currentTailoredPdfUrl = tailorData.pdfUrl;
+      chrome.storage.local.set({ currentTailoredPdfUrl });
+    } else {
+      // Check if one was set via context
+      chrome.storage.local.get(['currentTailoredPdfUrl'], (res) => {
+        if (res.currentTailoredPdfUrl) {
+          currentTailoredPdfUrl = res.currentTailoredPdfUrl;
+          updateResumeStatusUI();
+        }
+      });
     }
     
-    const resumeStatus = document.getElementById('makdi-resume-status');
-    if (resumeStatus) {
-      if (currentTailoredPdfUrl) {
-        resumeStatus.innerHTML = `<span style="color: #10B981; font-weight: 600;">Ready to apply</span><br/><span style="font-size: 11px;">Will auto-attach to file inputs</span>`;
-      } else {
-        resumeStatus.innerHTML = `<span style="color: #F59E0B; font-weight: 600;">Default Resume Selected</span><br/><span style="font-size: 11px;">No tailored resume found for this role</span>`;
-      }
-    }
+    updateResumeStatusUI();
   } catch(e) {
     console.error(e);
+  }
+}
+
+function updateResumeStatusUI() {
+  const resumeStatus = document.getElementById('makdi-resume-status');
+  if (resumeStatus) {
+    if (currentTailoredPdfUrl) {
+      resumeStatus.innerHTML = `<span style="color: #10B981; font-weight: 600;">Ready to apply</span><br/><span style="font-size: 11px;">Will auto-attach to file inputs</span>`;
+    } else {
+      resumeStatus.innerHTML = `<span style="color: #F59E0B; font-weight: 600;">Default Resume Selected</span><br/><span style="font-size: 11px;">No tailored resume found for this role</span>`;
+    }
   }
 }
 
