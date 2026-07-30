@@ -60,4 +60,69 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
+// Track external application
+router.post('/track-external', authMiddleware, async (req, res) => {
+  const { url, title } = req.body;
+  const db = req.app.locals.db;
+  
+  try {
+    // Try to find a matching job in the database based on URL or title
+    let job = await db.get('SELECT id FROM jobs WHERE apply_url = ? OR title = ?', [url, title]);
+    if (!job) {
+      // Create a dummy job entry if it doesn't exist
+      const result = await db.run(
+        'INSERT INTO jobs (title, company, apply_url) VALUES (?, ?, ?)',
+        [title || 'External Job', 'External Company', url]
+      );
+      job = { id: result.lastID };
+    }
+    
+    // Add to applications
+    await db.run(
+      'INSERT INTO applications (user_id, job_id, status, applied_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)',
+      [req.user.id, job.id, 'Applied']
+    );
+    
+    res.json({ message: 'Tracked successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to track application' });
+  }
+});
+
+// Get tailored resume for a specific job title
+router.get('/tailored', authMiddleware, async (req, res) => {
+  const { title } = req.query;
+  const db = req.app.locals.db;
+  
+  try {
+    let query = `
+      SELECT t.tailored_pdf_path 
+      FROM tailored_resumes t
+      JOIN jobs j ON t.job_id = j.id
+      WHERE t.user_id = ?
+    `;
+    let params = [req.user.id];
+    
+    if (title) {
+      // Find where job title roughly matches the page title
+      query += ` AND ? LIKE '%' || j.title || '%'`;
+      params.push(title);
+    }
+    
+    query += ` ORDER BY t.created_at DESC LIMIT 1`;
+    
+    const tailored = await db.get(query, params);
+    
+    if (tailored && tailored.tailored_pdf_path) {
+      res.json({ pdfUrl: `/uploads/${tailored.tailored_pdf_path}` });
+    } else {
+      res.json({ pdfUrl: null });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to find tailored resume' });
+  }
+});
+
 module.exports = router;

@@ -1,15 +1,19 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, MapPin, Briefcase, Filter, ChevronDown, CheckCircle2, XCircle, FileText } from 'lucide-react';
+import { Search, MapPin, Briefcase, Filter, ChevronDown, CheckCircle2, XCircle, FileText, Loader2, Download, Plus } from 'lucide-react';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tailoringId, setTailoringId] = useState<number | null>(null);
+  const [showExtensionModal, setShowExtensionModal] = useState(false);
   
   // Filters
   const [remoteFilter, setRemoteFilter] = useState('All');
+  const [experienceFilter, setExperienceFilter] = useState('All');
+  const [jobTypeFilter, setJobTypeFilter] = useState('All');
   const [searchFilter, setSearchFilter] = useState('');
 
   useEffect(() => {
@@ -17,6 +21,13 @@ export default function Dashboard() {
     if (!token) {
       router.push('/login');
       return;
+    }
+
+    // Show extension modal if they just finished onboarding (maybe via a query param or just once)
+    const hasSeenModal = localStorage.getItem('makdi_seen_extension_modal');
+    if (!hasSeenModal) {
+      setShowExtensionModal(true);
+      localStorage.setItem('makdi_seen_extension_modal', 'true');
     }
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jobs`, {
@@ -33,16 +44,69 @@ export default function Dashboard() {
     });
   }, [router]);
 
+  const handleTailorResume = async (jobId: number) => {
+    setTailoringId(jobId);
+    try {
+      const token = localStorage.getItem('makdi_token');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/tailor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ jobId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Update job to show tailored resume is ready
+        setJobs(jobs.map(j => j.id === jobId ? { ...j, tailored_pdf_url: data.pdfUrl, tailored: true } : j));
+      } else {
+        alert('Failed to tailor resume: ' + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error tailoring resume.');
+    } finally {
+      setTailoringId(null);
+    }
+  };
+
   const filteredJobs = jobs.filter((job: any) => {
     if (remoteFilter !== 'All' && job.remote_type !== remoteFilter) return false;
     if (searchFilter && !job.title?.toLowerCase().includes(searchFilter.toLowerCase()) && !job.company?.toLowerCase().includes(searchFilter.toLowerCase())) return false;
+    // For jobType and experience, assuming the scraper added them or we simulate it
+    if (jobTypeFilter !== 'All' && job.job_type !== jobTypeFilter && job.job_type !== undefined) return false;
+    if (experienceFilter !== 'All' && job.experience_level !== experienceFilter && job.experience_level !== undefined) return false;
     return true;
   });
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-makdi-bg-light">Loading matches...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-makdi-bg-light"><Loader2 className="animate-spin text-makdi-primary w-12 h-12"/></div>;
 
   return (
     <div className="min-h-screen bg-makdi-bg-light">
+      {/* Extension Modal */}
+      {showExtensionModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center shadow-2xl">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-4xl">🕸️</span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Install MAKDI Autofill</h2>
+            <p className="text-gray-600 mb-8">
+              Never type your name into Workday again. Install our free Chrome Extension to auto-apply using your tailored AI resumes in one click!
+            </p>
+            <div className="flex gap-4">
+              <button onClick={() => setShowExtensionModal(false)} className="flex-1 px-4 py-3 text-gray-500 font-medium hover:bg-gray-100 rounded-xl transition-colors">
+                Maybe Later
+              </button>
+              <a href="/extension.zip" download className="flex-1 bg-makdi-primary text-white px-4 py-3 rounded-xl font-bold hover:bg-makdi-primary-hover transition-colors shadow-lg shadow-green-200">
+                Download Extension
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-makdi-white border-b border-makdi-border px-8 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-2">
@@ -54,14 +118,14 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 flex gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 flex gap-8 flex-col md:flex-row">
         
         {/* Filters Sidebar */}
-        <div className="w-64 flex-shrink-0 space-y-6">
+        <div className="w-full md:w-64 flex-shrink-0 space-y-6">
           <div className="bg-makdi-white p-5 rounded-xl border border-makdi-border shadow-sm">
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2"><Filter size={18}/> Filters</h3>
             
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Search</label>
                 <div className="relative">
@@ -79,7 +143,7 @@ export default function Dashboard() {
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Workplace Type</label>
                 <select 
-                  className="w-full border rounded-lg p-2 text-sm focus:ring-1 focus:ring-makdi-primary outline-none"
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-1 focus:ring-makdi-primary outline-none bg-white"
                   value={remoteFilter}
                   onChange={(e) => setRemoteFilter(e.target.value)}
                 >
@@ -87,6 +151,36 @@ export default function Dashboard() {
                   <option>Remote</option>
                   <option>Onsite</option>
                   <option>Hybrid</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Experience Level</label>
+                <select 
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-1 focus:ring-makdi-primary outline-none bg-white"
+                  value={experienceFilter}
+                  onChange={(e) => setExperienceFilter(e.target.value)}
+                >
+                  <option>All</option>
+                  <option>Entry-level</option>
+                  <option>Mid-level</option>
+                  <option>Senior</option>
+                  <option>Director</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Job Type</label>
+                <select 
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-1 focus:ring-makdi-primary outline-none bg-white"
+                  value={jobTypeFilter}
+                  onChange={(e) => setJobTypeFilter(e.target.value)}
+                >
+                  <option>All</option>
+                  <option>Full-time</option>
+                  <option>Contract</option>
+                  <option>Internship</option>
+                  <option>Part-time</option>
                 </select>
               </div>
             </div>
@@ -108,8 +202,8 @@ export default function Dashboard() {
               {/* Match Badge */}
               {job.score != null && (
                 <div className="absolute top-6 right-6 flex flex-col items-end">
-                  <div className="bg-makdi-bg-light text-makdi-primary border border-makdi-primary/30 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                    {job.score}% Match
+                  <div className="bg-makdi-bg-light text-makdi-primary border border-makdi-primary/30 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-sm">
+                    ✨ {job.score}% Match
                   </div>
                 </div>
               )}
@@ -118,7 +212,7 @@ export default function Dashboard() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`https://logo.clearbit.com/${job.company?.toLowerCase().replace(/\s+/g, '')}.com`} onError={(e) => (e.currentTarget.style.display = 'none')} className="w-12 h-12 rounded-lg border object-contain bg-white" alt="logo"/>
                 
-                <div className="flex-1">
+                <div className="flex-1 pr-24">
                   <h3 className="text-lg font-bold text-gray-900">{job.title}</h3>
                   <div className="text-makdi-primary font-medium text-sm mb-2">{job.company}</div>
                   
@@ -142,10 +236,35 @@ export default function Dashboard() {
                   )}
 
                   <div className="flex gap-3 mt-5 border-t pt-4">
-                    <button className="flex-1 bg-makdi-primary text-white py-2 rounded-lg font-medium hover:bg-makdi-primary-hover flex items-center justify-center gap-2">
-                      <FileText size={16}/> Tailor Resume
-                    </button>
-                    <a href={job.apply_url} target="_blank" rel="noreferrer" className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg font-medium hover:bg-gray-200 flex items-center justify-center">
+                    {!job.tailored ? (
+                      <button 
+                        onClick={() => handleTailorResume(job.id)}
+                        disabled={tailoringId === job.id}
+                        className="flex-1 bg-makdi-primary text-white py-2.5 rounded-lg font-bold hover:bg-makdi-primary-hover flex items-center justify-center gap-2 disabled:opacity-70 transition-colors shadow-sm"
+                      >
+                        {tailoringId === job.id ? (
+                          <><Loader2 size={16} className="animate-spin" /> Tailoring AI Resume...</>
+                        ) : (
+                          <><FileText size={18}/> Tailor Resume</>
+                        )}
+                      </button>
+                    ) : (
+                      <div className="flex-1 flex gap-2">
+                        <button disabled className="flex-1 bg-green-50 text-makdi-primary border border-makdi-primary/30 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2">
+                          <CheckCircle2 size={18}/> Tailored
+                        </button>
+                        <a 
+                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${job.tailored_pdf_url}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg font-medium hover:bg-gray-200 flex items-center justify-center border"
+                          title="View PDF"
+                        >
+                          <Download size={18} />
+                        </a>
+                      </div>
+                    )}
+                    <a href={job.apply_url} target="_blank" rel="noreferrer" className="flex-1 bg-gray-100 text-gray-800 py-2.5 rounded-lg font-medium hover:bg-gray-200 flex items-center justify-center border transition-colors">
                       Original Apply
                     </a>
                   </div>

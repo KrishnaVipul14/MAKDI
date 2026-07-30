@@ -43,8 +43,10 @@ router.post('/', authMiddleware, async (req, res) => {
     const tailoredData = await generateTailoredContent(resume.parsed_text, job.description, 'resume');
     
     // Generate HTML and PDF
+    const firstName = profile.name ? profile.name.split(' ')[0] : 'User';
+    const safeJobTitle = job.title.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    const filename = `${firstName}_${safeJobTitle}_Resume.pdf`;
     const html = buildResumeHtml(profile, tailoredData);
-    const filename = `Makdi_${job.company.replace(/\\s+/g, '')}_${job.title.replace(/\\s+/g, '')}.pdf`;
     const pdfPath = await generatePdfFromHtml(html, filename);
 
     // Save tailored resume record

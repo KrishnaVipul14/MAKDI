@@ -178,7 +178,7 @@ export default function Onboarding() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Salary Expectation</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Salary Expectation (in Dollars $)</label>
               <input type="number" placeholder="80000" className="w-full border rounded p-2" value={salaryMin} onChange={e => setSalaryMin(e.target.value)} />
             </div>
             
