@@ -1,113 +1,104 @@
-import Image from "next/image";
+'use client';
+import Link from 'next/link';
+import { ArrowRight, Bot, Target, FileText } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (localStorage.getItem('makdi_token')) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  if (!mounted) return null;
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="min-h-screen bg-makdi-bg-light flex flex-col">
+      {/* Navbar */}
+      <nav className="border-b bg-white px-8 py-4 flex justify-between items-center">
+        <div className="text-2xl font-black text-makdi-primary tracking-tight">🕸️ MAKDI</div>
+        <div className="space-x-4">
+          {isLoggedIn ? (
+            <Link href="/dashboard" className="bg-makdi-primary text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-makdi-primary-hover transition-colors">
+              Go to Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="text-gray-600 font-semibold hover:text-makdi-primary">Log in</Link>
+              <Link href="/signup" className="bg-makdi-primary text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-makdi-primary-hover transition-colors">
+                Get Started Free
+              </Link>
+            </>
+          )}
         </div>
-      </div>
+      </nav>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      {/* Hero Section */}
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-4 py-20">
+        <div className="inline-block bg-green-100 text-makdi-primary font-bold px-4 py-1.5 rounded-full text-sm mb-6 border border-green-200 shadow-sm">
+          100% Free & Open Source AI Job Matcher
+        </div>
+        
+        <h1 className="text-6xl font-black text-gray-900 mb-6 max-w-4xl tracking-tight leading-tight">
+          Your AI Copilot for <br/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-makdi-primary to-green-500">
+            Landing Tech Jobs.
+          </span>
+        </h1>
+        
+        <p className="text-xl text-gray-600 mb-10 max-w-2xl">
+          Upload your resume once. MAKDI uses local AI to perfectly match you with jobs, auto-tailor your resume for every application, and track your success.
+        </p>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+        {isLoggedIn ? (
+          <Link href="/dashboard" className="group bg-makdi-primary text-white text-lg px-8 py-4 rounded-xl font-bold hover:bg-makdi-primary-hover transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+            Enter Dashboard <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+        ) : (
+          <Link href="/signup" className="group bg-makdi-primary text-white text-lg px-8 py-4 rounded-xl font-bold hover:bg-makdi-primary-hover transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+            Start Applying Faster <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+        )}
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        {/* Feature Grid */}
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl w-full mt-24">
+          <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm text-left">
+            <div className="bg-green-100 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+              <Target className="text-makdi-primary" size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Smart Matching</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Our AI analyzes your skills and scores you against thousands of remote and tech jobs daily.
+            </p>
+          </div>
+          
+          <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm text-left">
+            <div className="bg-green-100 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+              <Bot className="text-makdi-primary" size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">AI Tailored Resumes</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Automatically rewrite your resume and generate cover letters optimized for the exact job description.
+            </p>
+          </div>
+          
+          <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm text-left">
+            <div className="bg-green-100 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+              <FileText className="text-makdi-primary" size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Chrome Autofill</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Never type your name into Workday again. 1-click autofill your details into any job board.
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
