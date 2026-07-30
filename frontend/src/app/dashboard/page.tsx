@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [tailoringId, setTailoringId] = useState<number | null>(null);
   const [showExtensionModal, setShowExtensionModal] = useState(false);
+  const [tailorMode, setTailorMode] = useState<'creative' | 'conservative'>('creative');
   
   // Filters
   const [remoteFilter, setRemoteFilter] = useState('All');
@@ -54,7 +55,7 @@ export default function Dashboard() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ jobId })
+        body: JSON.stringify({ jobId, mode: tailorMode })
       });
       const data = await res.json();
       if (res.ok) {
@@ -191,8 +192,24 @@ export default function Dashboard() {
         <div className="flex-1 space-y-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-800">Your Job Matches ({filteredJobs.length})</h2>
-            <div className="flex items-center gap-2 text-sm text-gray-600 bg-white px-3 py-1.5 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-50">
-              Sort by: Best Match <ChevronDown size={14} />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center bg-white border rounded-lg p-1 text-sm shadow-sm">
+                <button 
+                  onClick={() => setTailorMode('conservative')}
+                  className={`px-3 py-1.5 rounded-md font-medium transition-colors ${tailorMode === 'conservative' ? 'bg-makdi-bg-light text-makdi-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Safe (Fast)
+                </button>
+                <button 
+                  onClick={() => setTailorMode('creative')}
+                  className={`px-3 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1 ${tailorMode === 'creative' ? 'bg-makdi-bg-light text-makdi-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Creative ✨
+                </button>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-white px-3 py-1.5 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-50">
+                Sort by: Best Match <ChevronDown size={14} />
+              </div>
             </div>
           </div>
 

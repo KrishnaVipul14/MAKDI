@@ -52,7 +52,7 @@ function buildResumeHtml(profile, tailoredData) {
         </ul>
         
         <h2>Education</h2>
-        <p>${profile.education_level || 'Degree'} - ${profile.years_experience || 0} Years Experience</p>
+        <p>${(tailoredData.education || profile.education_level || '').replace(/\n/g, '<br/>')}</p>
       </body>
     </html>
   `;
