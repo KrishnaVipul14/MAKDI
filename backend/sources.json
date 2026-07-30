@@ -1,6 +1,21 @@
 {
-  "arbeitnow": "https://www.arbeitnow.com/api/job-board-api",
-  "remoteok": "https://remoteok.com/api",
-  "lever_companies": ["netflix", "spotify", "notion"],
-  "greenhouse_companies": ["airbnb", "discord", "dropbox"]
+  "lever_companies": [
+    "netflix", "spotify", "notion", "figma", "coinbase", "lyft", "stripe",
+    "discord", "duolingo", "airtable", "brex", "gusto", "rippling", "plaid",
+    "robinhood", "chime", "scale-ai", "anduril", "ramp", "lattice",
+    "clickup", "deel", "mercury", "linear", "retool", "replit", "hugging-face",
+    "vercel", "hashicorp", "datadog", "posthog", "dbt-labs", "temporal",
+    "grammarly", "canva", "miro", "intercom", "zendesk", "twilio",
+    "pagerduty", "okta", "cloudflare", "fastly"
+  ],
+  "greenhouse_companies": [
+    "airbnb", "discord", "dropbox", "pinterest", "reddit", "shopify",
+    "zoom", "box", "elastic", "github", "gitlab", "hashicorp", "heroku",
+    "jetbrains", "segment", "sendgrid", "sentry", "squarespace", "typeform",
+    "webflow", "asana", "calendly", "carta", "clearbit", "contentful",
+    "databricks", "descript", "docusign", "domo", "drift", "envoy",
+    "expensify", "figma", "fivetran", "freshdesk", "gem", "greenhouse",
+    "highspot", "hubspot", "instacart", "ironclad", "iterable", "jumpcloud",
+    "kandji", "khan-academy", "loom", "lucidchart", "mixpanel", "monday"
+  ]
 }

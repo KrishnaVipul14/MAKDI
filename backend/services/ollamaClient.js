@@ -21,7 +21,7 @@ Return ONLY valid JSON: {"reworded": "..."}`;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-flash-lite-latest',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -51,7 +51,7 @@ Return ONLY valid JSON: {"summary": "..."}`;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-flash-lite-latest',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
