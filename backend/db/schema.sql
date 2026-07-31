@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
@@ -6,20 +6,20 @@ CREATE TABLE users (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER REFERENCES users(id),
   phone TEXT, location TEXT,
   education_level TEXT,
   years_experience REAL,
-  preferred_roles TEXT,        -- store as JSON string
-  preferred_locations TEXT,    -- JSON string
+  preferred_roles TEXT,
+  preferred_locations TEXT,
   remote_preference TEXT,
   salary_min INTEGER, salary_max INTEGER,
-  skills TEXT                  -- JSON string array
+  skills TEXT
 );
 
-CREATE TABLE resumes (
+CREATE TABLE IF NOT EXISTS resumes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER REFERENCES users(id),
   file_path TEXT, parsed_text TEXT,
@@ -29,7 +29,7 @@ CREATE TABLE resumes (
   uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE jobs (
+CREATE TABLE IF NOT EXISTS jobs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   external_id TEXT, source TEXT,
   title TEXT, company TEXT, location TEXT,
@@ -42,7 +42,7 @@ CREATE TABLE jobs (
   UNIQUE(external_id, source)
 );
 
-CREATE TABLE match_scores (
+CREATE TABLE IF NOT EXISTS match_scores (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER REFERENCES users(id),
   job_id INTEGER REFERENCES jobs(id),
@@ -50,7 +50,7 @@ CREATE TABLE match_scores (
   computed_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE tailored_resumes (
+CREATE TABLE IF NOT EXISTS tailored_resumes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER REFERENCES users(id),
   job_id INTEGER REFERENCES jobs(id),
@@ -59,7 +59,7 @@ CREATE TABLE tailored_resumes (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE applications (
+CREATE TABLE IF NOT EXISTS applications (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER REFERENCES users(id),
   job_id INTEGER REFERENCES jobs(id),
@@ -67,9 +67,19 @@ CREATE TABLE applications (
   applied_at DATETIME, notes TEXT
 );
 
-CREATE TABLE cover_letters (
+CREATE TABLE IF NOT EXISTS cover_letters (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER REFERENCES users(id),
   job_id INTEGER REFERENCES jobs(id),
   content TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS session_resumes (
+  id TEXT PRIMARY KEY,
+  file_path TEXT,
+  parsed_text TEXT,
+  parsed_skills TEXT,
+  parsed_education TEXT,
+  parsed_experience_years REAL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

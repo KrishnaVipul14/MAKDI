@@ -13,11 +13,10 @@ async function getDb() {
     driver: sqlite3.Database
   });
 
-  if (isNewDb && fs.existsSync(schemaPath)) {
-    console.log('Initializing database schema...');
+  // Always run schema — all tables use IF NOT EXISTS so it's safe on existing DBs
+  if (fs.existsSync(schemaPath)) {
     const schema = fs.readFileSync(schemaPath, 'utf8');
     await db.exec(schema);
-    console.log('Schema initialized successfully.');
   }
 
   return db;

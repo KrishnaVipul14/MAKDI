@@ -76,6 +76,12 @@ export default function Dashboard() {
         headers: { 'x-session-id': sessionId }
       });
       const data = await res.json();
+      // Stale session (backend restarted) — clear and re-upload
+      if (res.status === 404 || res.status === 400) {
+        localStorage.removeItem('makdi_session');
+        setSessionId(null);
+        return;
+      }
       setJobs(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);

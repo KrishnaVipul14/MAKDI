@@ -28,17 +28,6 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
 
     // Store session data in DB (lightweight — just resume text + skills, no password)
     const db = req.app.locals.db;
-    
-    // Ensure session_resumes table exists
-    await db.run(`CREATE TABLE IF NOT EXISTS session_resumes (
-      id TEXT PRIMARY KEY,
-      file_path TEXT,
-      parsed_text TEXT,
-      parsed_skills TEXT,
-      parsed_education TEXT,
-      parsed_experience_years REAL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
 
     await db.run(
       `INSERT INTO session_resumes (id, file_path, parsed_text, parsed_skills, parsed_education, parsed_experience_years)
