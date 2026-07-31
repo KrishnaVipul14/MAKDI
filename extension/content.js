@@ -1,21 +1,11 @@
-let makdiToken = null;
 let profileData = null;
 let currentTailoredPdfUrl = null;
 
 // Initialize
-chrome.storage.local.get(['makdiToken'], (result) => {
-  if (result.makdiToken) {
-    makdiToken = result.makdiToken;
-    fetchProfileData();
-  }
-});
+fetchProfileData();
 
-// Watch for token updates from popup
+// Watch for context updates from dashboard
 chrome.storage.onChanged.addListener((changes) => {
-  if (changes.makdiToken) {
-    makdiToken = changes.makdiToken.newValue;
-    fetchProfileData();
-  }
   if (changes.currentTailoredPdfUrl && changes.currentTailoredPdfUrl.newValue) {
     currentTailoredPdfUrl = changes.currentTailoredPdfUrl.newValue;
     updateResumeStatusUI();
@@ -39,15 +29,29 @@ window.addEventListener("message", (event) => {
   }
 });
 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'autofill') {
+    if (request.data) {
+      profileData = request.data; // Use data from popup
+    }
+    const btn = document.getElementById('makdi-autofill-btn');
+    if (btn) {
+      performAutofill(btn);
+    } else {
+      performAutofill({ style: {}, innerHTML: '' });
+    }
+    sendResponse({ success: true });
+  }
+  return true;
+});
+
 async function fetchProfileData() {
   try {
-    const apiBase = 'http://localhost:4000'; // Assuming local backend, or replace dynamically
-    const res = await fetch(`${apiBase}/api/profile`, {
-      headers: { 'Authorization': `Bearer ${makdiToken}` }
-    });
+    const apiBase = 'http://localhost:4000'; // Assuming local backend
+    const res = await fetch(`${apiBase}/api/profile`);
     const data = await res.json();
-    if (data.profile) {
-      profileData = data.profile;
+    if (data.name) {
+      profileData = data.profile || {};
       profileData.email = data.email;
       profileData.name = data.name;
       injectMakdiWidget();
@@ -123,33 +127,13 @@ function injectMakdiWidget() {
 
 async function fetchTailoredResume(jobTitle) {
   try {
-    const apiBase = 'http://localhost:4000';
-    // Fetch profile and their tailored resumes
-    const res = await fetch(`${apiBase}/api/profile`, {
-      headers: { 'Authorization': `Bearer ${makdiToken}` }
+    // Check if one was set via context
+    chrome.storage.local.get(['currentTailoredPdfUrl'], (res) => {
+      if (res.currentTailoredPdfUrl) {
+        currentTailoredPdfUrl = res.currentTailoredPdfUrl;
+      }
+      updateResumeStatusUI();
     });
-    const data = await res.json();
-    
-    // Attempt to fetch tailored resume specifically for this job
-    const tailorRes = await fetch(`${apiBase}/api/applications/tailored?title=${encodeURIComponent(jobTitle)}`, {
-      headers: { 'Authorization': `Bearer ${makdiToken}` }
-    });
-    const tailorData = await tailorRes.json();
-    
-    if (tailorData.pdfUrl) {
-      currentTailoredPdfUrl = tailorData.pdfUrl;
-      chrome.storage.local.set({ currentTailoredPdfUrl });
-    } else {
-      // Check if one was set via context
-      chrome.storage.local.get(['currentTailoredPdfUrl'], (res) => {
-        if (res.currentTailoredPdfUrl) {
-          currentTailoredPdfUrl = res.currentTailoredPdfUrl;
-          updateResumeStatusUI();
-        }
-      });
-    }
-    
-    updateResumeStatusUI();
   } catch(e) {
     console.error(e);
   }
@@ -169,8 +153,10 @@ function updateResumeStatusUI() {
 async function performAutofill(btnElement) {
   if (!profileData) return;
   
-  btnElement.innerHTML = 'Filling...';
-  btnElement.style.opacity = '0.8';
+  if (btnElement.style) {
+    btnElement.innerHTML = 'Filling...';
+    btnElement.style.opacity = '0.8';
+  }
 
   const inputs = document.querySelectorAll('input, select, textarea');
   let filledCount = 0;
@@ -206,21 +192,20 @@ async function performAutofill(btnElement) {
       simulateTyping(input, profileData.location);
       filledCount++;
     } else if (match.includes('linkedin')) {
-      simulateTyping(input, "https://linkedin.com/in/" + profileData.name.replace(/\\s+/g, ''));
+      simulateTyping(input, profileData.linkedin || ("https://linkedin.com/in/" + profileData.name.replace(/\s+/g, '')));
       filledCount++;
     } else if (match.includes('github')) {
-      simulateTyping(input, "https://github.com/" + profileData.name.replace(/\\s+/g, ''));
-      filledCount++;
-    } else if (match.includes('salary') || match.includes('expect')) {
-      simulateTyping(input, profileData.salary_min?.toString() || '');
+      simulateTyping(input, profileData.github || ("https://github.com/" + profileData.name.replace(/\s+/g, '')));
       filledCount++;
     }
   });
 
-  setTimeout(() => {
-    btnElement.innerHTML = '✨ Autofill Complete';
-    btnElement.style.background = '#059669';
-  }, 500);
+  if (btnElement.style) {
+    setTimeout(() => {
+      btnElement.innerHTML = '✨ Autofill Complete';
+      btnElement.style.background = '#059669';
+    }, 500);
+  }
 }
 
 function simulateTyping(element, value) {
@@ -255,16 +240,13 @@ function attachSubmitListener() {
     const text = (btn.innerText || btn.value || '').toLowerCase();
     if (text.includes('submit') || text.includes('apply')) {
       // Mark as applied in backend (fire and forget)
-      if (makdiToken) {
-        fetch('http://localhost:4000/api/applications/track-external', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${makdiToken}`
-          },
-          body: JSON.stringify({ url: window.location.href, title: document.title })
-        }).catch(err => console.log('Track err:', err));
-      }
+      fetch('http://localhost:4000/api/applications/track-external', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ url: window.location.href, title: document.title })
+      }).catch(err => console.log('Track err:', err));
     }
   });
 }

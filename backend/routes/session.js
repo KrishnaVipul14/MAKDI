@@ -54,7 +54,7 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
     });
   } catch (err) {
     console.error('Session upload error:', err);
-    res.status(500).json({ error: err.message || 'Failed to parse resume' });
+    res.status(500).json({ error: err.message || 'Failed to process resume' });
   }
 });
 

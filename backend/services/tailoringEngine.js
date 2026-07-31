@@ -88,9 +88,26 @@ function analyzeGaps(resumeObj, jobDescription) {
       }
       if (location) {
         gaps.push({ type: "weak_phrasing", keyword, foundAs: match.foundAs, location });
+      } else {
+        gaps.push({ type: "missing_keyword", keyword });
       }
     }
   }
+
+  // Second pass: for missing_keyword, assign a fallback location for AI to weave it in
+  for (const gap of gaps) {
+    if (gap.type === "missing_keyword") {
+      let fallbackLocation = null;
+      if (resumeObj.experience && resumeObj.experience.length > 0 && resumeObj.experience[0].bullets && resumeObj.experience[0].bullets.length > 0) {
+        // Just pick the very first bullet of the most recent job as a chance for the AI to weave it in
+        fallbackLocation = [0, 0];
+      }
+      if (fallbackLocation) {
+        gap.location = fallbackLocation;
+      }
+    }
+  }
+
   return gaps;
 }
 
@@ -125,10 +142,26 @@ async function generatePatches(resumeObj, gaps, jobTitle) {
         patches.push({ field: `skills["${category}"]`, action: "reorder", newValue: [...matched, ...unmatched] });
       }
     }
+
+    // Safely append missing keywords to the first skills category if they don't naturally fit anywhere
+    const missingSkills = gaps.filter(g => g.type === "missing_keyword").map(g => g.keyword);
+    if (missingSkills.length > 0) {
+      const cat = resumeObj.skills["Tools & Platforms"] ? "Tools & Platforms" : Object.keys(resumeObj.skills)[0];
+      if (cat) {
+        const existing = resumeObj.skills[cat] || [];
+        // Only append if not already in patches
+        const existingPatch = patches.find(p => p.field === `skills["${cat}"]`);
+        if (existingPatch) {
+          existingPatch.newValue = [...new Set([...missingSkills, ...existingPatch.newValue])];
+        } else {
+          patches.push({ field: `skills["${cat}"]`, action: "append", newValue: [...new Set([...missingSkills, ...existing])] });
+        }
+      }
+    }
   }
 
-  // 2. Bullet Rewording
-  for (const gap of gaps.filter(g => g.type === "weak_phrasing")) {
+  // 2. Bullet Rewording (targets BOTH weak_phrasing and missing_keyword that have a location)
+  for (const gap of gaps.filter(g => (g.type === "weak_phrasing" || g.type === "missing_keyword") && g.location)) {
     const [expIndex, bulletIndex] = gap.location;
     const original = resumeObj.experience[expIndex].bullets[bulletIndex];
     

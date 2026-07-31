@@ -111,11 +111,13 @@ ${rawResumeText}`;
         temperature: 0.1
       }
     });
-    
-    return JSON.parse(response.text);
+    let text = response.text;
+    // Strip markdown code blocks just in case
+    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    return JSON.parse(text);
   } catch (err) {
     console.error('Gemini Parse Error:', err.message);
-    throw new Error('Failed to parse resume into structured object.');
+    throw new Error('AI Parser failed: ' + err.message);
   }
 }
 
