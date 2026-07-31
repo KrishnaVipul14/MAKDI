@@ -40,7 +40,7 @@ function buildResumeHtml(resumeObj) {
   if (resumeObj.skills) {
     for (const [cat, items] of Object.entries(resumeObj.skills)) {
       if (Array.isArray(items) && items.length > 0) {
-        skillsHtml += \`<div class="skill-cat"><strong>\${cat}:</strong> \${items.join(', ')}</div>\`;
+        skillsHtml += `<div class="skill-cat"><strong>${cat}:</strong> ${items.join(', ')}</div>`;
       }
     }
   }
@@ -49,16 +49,16 @@ function buildResumeHtml(resumeObj) {
   let expHtml = '';
   if (resumeObj.experience && Array.isArray(resumeObj.experience)) {
     resumeObj.experience.forEach(exp => {
-      expHtml += \`
+      expHtml += `
         <div class="exp-item">
           <div class="exp-header">
-            <strong>\${exp.title || ''}</strong> at \${exp.company || ''} <span class="exp-dates">\${exp.dates || ''}</span>
+            <strong>${exp.title || ''}</strong> at ${exp.company || ''} <span class="exp-dates">${exp.dates || ''}</span>
           </div>
           <ul>
-            \${(exp.bullets || []).map(b => \`<li class="exp-bullet">\${b}</li>\`).join('')}
+            ${(exp.bullets || []).map(b => `<li class="exp-bullet">${b}</li>`).join('')}
           </ul>
         </div>
-      \`;
+      `;
     });
   }
 
@@ -66,38 +66,38 @@ function buildResumeHtml(resumeObj) {
   let eduHtml = '';
   if (resumeObj.education && Array.isArray(resumeObj.education)) {
     resumeObj.education.forEach(edu => {
-      eduHtml += \`
+      eduHtml += `
         <div class="edu-item">
-          <strong>\${edu.institution || ''}</strong> - \${edu.degree || ''} <span class="exp-dates">\${edu.dates || ''}</span>
+          <strong>${edu.institution || ''}</strong> - ${edu.degree || ''} <span class="exp-dates">${edu.dates || ''}</span>
         </div>
-      \`;
+      `;
     });
   }
 
   // Awards/Projects
   let awardsHtml = '';
   if (resumeObj.awards && Array.isArray(resumeObj.awards) && resumeObj.awards.length > 0) {
-    awardsHtml = \`<h2>Awards</h2><ul>\${resumeObj.awards.map(a => \`<li>\${a}</li>\`).join('')}</ul>\`;
+    awardsHtml = `<h2>Awards</h2><ul>${resumeObj.awards.map(a => `<li>${a}</li>`).join('')}</ul>`;
   }
   
   let projectsHtml = '';
   if (resumeObj.projects && Array.isArray(resumeObj.projects) && resumeObj.projects.length > 0) {
-    projectsHtml = \`<h2>Projects</h2>\`;
+    projectsHtml = `<h2>Projects</h2>`;
     resumeObj.projects.forEach(proj => {
-      projectsHtml += \`
+      projectsHtml += `
         <div class="exp-item">
           <div class="exp-header">
-            <strong>\${proj.name || ''}</strong> \${proj.title ? '- ' + proj.title : ''} <span class="exp-dates">\${proj.dates || ''}</span>
+            <strong>${proj.name || ''}</strong> ${proj.title ? '- ' + proj.title : ''} <span class="exp-dates">${proj.dates || ''}</span>
           </div>
           <ul>
-            \${(proj.bullets || []).map(b => \`<li class="exp-bullet">\${b}</li>\`).join('')}
+            ${(proj.bullets || []).map(b => `<li class="exp-bullet">${b}</li>`).join('')}
           </ul>
         </div>
-      \`;
+      `;
     });
   }
 
-  return \`
+  return `
     <html>
       <head>
         <style>
@@ -115,30 +115,30 @@ function buildResumeHtml(resumeObj) {
         </style>
       </head>
       <body>
-        <h1>\${resumeObj.name || 'Candidate Name'}</h1>
-        <div class="title">\${resumeObj.title || ''}</div>
+        <h1>${resumeObj.name || 'Candidate Name'}</h1>
+        <div class="title">${resumeObj.title || ''}</div>
         <div class="contact">
-          \${contactLine}
+          ${contactLine}
         </div>
         
         <h2>Professional Summary</h2>
-        <p>\${resumeObj.summary || ''}</p>
+        <p>${resumeObj.summary || ''}</p>
         
         <h2>Skills</h2>
-        \${skillsHtml}
+        ${skillsHtml}
         
         <h2>Experience</h2>
-        \${expHtml}
+        ${expHtml}
         
-        \${projectsHtml}
+        ${projectsHtml}
         
         <h2>Education</h2>
-        \${eduHtml}
+        ${eduHtml}
 
-        \${awardsHtml}
+        ${awardsHtml}
       </body>
     </html>
-  \`;
+  `;
 }
 
 module.exports = { generatePdfFromHtml, buildResumeHtml };
