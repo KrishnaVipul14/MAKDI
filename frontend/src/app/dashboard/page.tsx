@@ -247,19 +247,27 @@ export default function Dashboard() {
       {/* Extension Modal */}
       {showExtModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center shadow-2xl relative">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-8 text-center shadow-2xl relative">
             <button onClick={() => setShowExtModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X /></button>
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">🕸️</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">Install MAKDI Autofill</h2>
-            <p className="text-gray-500 mb-6">Auto-fill any job application with your resume data in one click.</p>
-            <div className="flex flex-col gap-3">
-              <a href="/extension.zip" download className="w-full bg-makdi-primary text-white py-3 rounded-xl font-bold hover:bg-makdi-primary-hover">
-                Download Extension
-              </a>
-              <button onClick={() => { setShowExtModal(false); window.open(sessionStorage.getItem('pending_apply_url') || '', '_blank'); }} className="w-full text-gray-500 hover:bg-gray-100 py-3 rounded-xl">
-                Continue without extension
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Install MAKDI Autofill</h2>
+            <p className="text-gray-600 mb-6 text-sm">Since MAKDI is open-source and running locally, you need to install the extension in Developer Mode (it is not on the Chrome Web Store yet).</p>
+            
+            <div className="text-left bg-gray-50 p-4 rounded-xl mb-6 border text-sm text-gray-700 space-y-3">
+              <p><strong>Step 1:</strong> <a href="/extension.zip" download className="text-makdi-primary font-bold underline">Download the extension ZIP</a> and extract it to a folder.</p>
+              <p><strong>Step 2:</strong> Open Chrome and go to <code className="bg-gray-200 px-1 rounded">chrome://extensions</code></p>
+              <p><strong>Step 3:</strong> Turn on <strong>Developer mode</strong> (top right corner).</p>
+              <p><strong>Step 4:</strong> Click <strong>Load unpacked</strong> and select the extracted folder.</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => { setShowExtModal(false); window.open(sessionStorage.getItem('pending_apply_url') || '', '_blank'); }} className="flex-1 text-gray-600 hover:bg-gray-100 py-3 rounded-xl font-medium border border-gray-200">
+                Skip for now
+              </button>
+              <button onClick={() => { setShowExtModal(false); }} className="flex-1 bg-makdi-primary text-white py-3 rounded-xl font-bold hover:bg-makdi-primary-hover">
+                I've installed it
               </button>
             </div>
           </div>
