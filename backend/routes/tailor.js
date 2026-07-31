@@ -1,5 +1,5 @@
 const express = require('express');
-const { tailorResume } = require('../services/tailoringEngine');
+const { tailorResumeToTarget } = require('../services/tailoringEngine');
 const { generatePdfFromHtml, buildResumeHtml } = require('../services/pdfGenerator');
 
 const router = express.Router();
@@ -31,40 +31,36 @@ router.post('/', sessionMiddleware, async (req, res) => {
 
     const session = req.session;
     
-    // Build a lightweight profile from session data
-    const profile = {
-      name: 'User',
-      email: '',
-      phone: '',
-      location: '',
-      years_experience: session.parsed_experience_years || 0,
-      education_level: session.parsed_education || 'Undergrad',
-      parsed_skills: session.parsed_skills || '[]'
-    };
+    // Parse the stored structured JSON
+    let originalResumeObject;
+    try {
+      originalResumeObject = JSON.parse(session.structured_json);
+    } catch (e) {
+      return res.status(400).json({ error: 'Stored resume is not properly structured. Please re-upload.' });
+    }
 
-    // Run the hybrid tailoring engine
-    const engineResult = await tailorResume(
-      session.parsed_text,
-      job.description || '',
-      profile,
-      mode || 'creative',
-      job.title
+    // Run the patch-based tailoring engine
+    const engineResult = await tailorResumeToTarget(
+      originalResumeObject,
+      job.description || ''
     );
 
     // Generate PDF
-    const safeTitle = job.title.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-    const filename = `MAKDI_${safeTitle}_Resume.pdf`;
-    const html = buildResumeHtml(profile, engineResult.tailoredData);
+    const safeJobTitle = job.title.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    const safeName = (engineResult.editedResumeObject.name || 'User').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    const filename = `${safeName}_${safeJobTitle}_Resume.pdf`;
+    
+    const html = buildResumeHtml(engineResult.editedResumeObject);
     await generatePdfFromHtml(html, filename);
 
     res.json({
       message: 'Resume tailored successfully',
       pdfUrl: `/uploads/${filename}`,
-      tailoredData: engineResult.tailoredData,
-      ats_score_before: engineResult.ats_score_before,
-      ats_score_after: engineResult.ats_score_after,
-      changes_made: engineResult.changes_made,
-      keywords_added: engineResult.keywords_added
+      tailoredData: engineResult.editedResumeObject,
+      ats_score_before: engineResult.atsScoreBefore,
+      ats_score_after: engineResult.atsScoreAfter,
+      patches_applied: engineResult.patchesApplied,
+      missing_skills: engineResult.missingSkills
     });
   } catch (err) {
     console.error('Tailor error:', err);

@@ -78,8 +78,6 @@ CREATE TABLE IF NOT EXISTS session_resumes (
   id TEXT PRIMARY KEY,
   file_path TEXT,
   parsed_text TEXT,
-  parsed_skills TEXT,
-  parsed_education TEXT,
-  parsed_experience_years REAL,
+  structured_json TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

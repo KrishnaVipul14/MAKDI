@@ -29,25 +29,28 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
     // Store session data in DB (lightweight — just resume text + skills, no password)
     const db = req.app.locals.db;
 
+    // Check if columns exist, if not run migration
+    const tableInfo = await db.all("PRAGMA table_info(session_resumes)");
+    if (!tableInfo.find(c => c.name === 'structured_json')) {
+      await db.exec(`
+        ALTER TABLE session_resumes ADD COLUMN structured_json TEXT;
+      `);
+    }
+
     await db.run(
-      `INSERT INTO session_resumes (id, file_path, parsed_text, parsed_skills, parsed_education, parsed_experience_years)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO session_resumes (id, file_path, parsed_text, structured_json) VALUES (?, ?, ?, ?)`,
       [
         sessionId,
         req.file.path,
         parsed.parsed_text,
-        JSON.stringify(parsed.parsed_skills),
-        parsed.parsed_education,
-        parsed.parsed_experience_years
+        JSON.stringify(parsed.structured_json)
       ]
     );
 
-    res.json({
-      sessionId,
-      parsed_skills: parsed.parsed_skills,
-      parsed_education: parsed.parsed_education,
-      parsed_experience_years: parsed.parsed_experience_years,
-      preview_text: parsed.parsed_text.substring(0, 300)
+    res.json({ 
+      sessionId, 
+      message: 'Resume parsed successfully',
+      structured_json: parsed.structured_json
     });
   } catch (err) {
     console.error('Session upload error:', err);

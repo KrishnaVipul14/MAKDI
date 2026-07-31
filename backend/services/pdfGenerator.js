@@ -18,44 +18,127 @@ async function generatePdfFromHtml(htmlContent, filename) {
   return filePath;
 }
 
-function buildResumeHtml(profile, tailoredData) {
-  return `
+function buildContactLine(contact) {
+  if (!contact) return '';
+  const fields = [
+    contact.phone,
+    contact.email,
+    contact.location,
+    contact.linkedin,
+    contact.github,
+    contact.leetcode
+  ].filter(f => f && typeof f === 'string' && f.trim().length > 0);
+  
+  return fields.join(' | ');
+}
+
+function buildResumeHtml(resumeObj) {
+  const contactLine = buildContactLine(resumeObj.contact);
+  
+  // Skills
+  let skillsHtml = '';
+  if (resumeObj.skills) {
+    for (const [cat, items] of Object.entries(resumeObj.skills)) {
+      if (Array.isArray(items) && items.length > 0) {
+        skillsHtml += \`<div class="skill-cat"><strong>\${cat}:</strong> \${items.join(', ')}</div>\`;
+      }
+    }
+  }
+
+  // Experience
+  let expHtml = '';
+  if (resumeObj.experience && Array.isArray(resumeObj.experience)) {
+    resumeObj.experience.forEach(exp => {
+      expHtml += \`
+        <div class="exp-item">
+          <div class="exp-header">
+            <strong>\${exp.title || ''}</strong> at \${exp.company || ''} <span class="exp-dates">\${exp.dates || ''}</span>
+          </div>
+          <ul>
+            \${(exp.bullets || []).map(b => \`<li class="exp-bullet">\${b}</li>\`).join('')}
+          </ul>
+        </div>
+      \`;
+    });
+  }
+
+  // Education
+  let eduHtml = '';
+  if (resumeObj.education && Array.isArray(resumeObj.education)) {
+    resumeObj.education.forEach(edu => {
+      eduHtml += \`
+        <div class="edu-item">
+          <strong>\${edu.institution || ''}</strong> - \${edu.degree || ''} <span class="exp-dates">\${edu.dates || ''}</span>
+        </div>
+      \`;
+    });
+  }
+
+  // Awards/Projects
+  let awardsHtml = '';
+  if (resumeObj.awards && Array.isArray(resumeObj.awards) && resumeObj.awards.length > 0) {
+    awardsHtml = \`<h2>Awards</h2><ul>\${resumeObj.awards.map(a => \`<li>\${a}</li>\`).join('')}</ul>\`;
+  }
+  
+  let projectsHtml = '';
+  if (resumeObj.projects && Array.isArray(resumeObj.projects) && resumeObj.projects.length > 0) {
+    projectsHtml = \`<h2>Projects</h2>\`;
+    resumeObj.projects.forEach(proj => {
+      projectsHtml += \`
+        <div class="exp-item">
+          <div class="exp-header">
+            <strong>\${proj.name || ''}</strong> \${proj.title ? '- ' + proj.title : ''} <span class="exp-dates">\${proj.dates || ''}</span>
+          </div>
+          <ul>
+            \${(proj.bullets || []).map(b => \`<li class="exp-bullet">\${b}</li>\`).join('')}
+          </ul>
+        </div>
+      \`;
+    });
+  }
+
+  return \`
     <html>
       <head>
         <style>
           body { font-family: 'Inter', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
           h1 { color: #1B7A3D; margin-bottom: 5px; }
+          .title { font-size: 16px; font-weight: bold; color: #555; margin-bottom: 15px; }
           .contact { font-size: 14px; color: #666; margin-bottom: 20px; border-bottom: 2px solid #1B7A3D; padding-bottom: 10px; }
           h2 { color: #1B7A3D; font-size: 18px; margin-top: 20px; border-bottom: 1px solid #ddd; }
-          .skills { display: flex; flex-wrap: wrap; gap: 8px; }
-          .skill { background: #DFF5E1; color: #1B7A3D; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: bold; }
-          .exp-bullet { margin-bottom: 8px; }
+          .skill-cat { margin-bottom: 5px; font-size: 14px; }
+          .exp-item { margin-bottom: 15px; }
+          .exp-header { font-size: 15px; margin-bottom: 5px; display: flex; justify-content: space-between;}
+          .exp-dates { color: #666; font-size: 13px; }
+          .exp-bullet { margin-bottom: 4px; font-size: 14px; }
+          .edu-item { margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between;}
         </style>
       </head>
       <body>
-        <h1>${profile.name || 'Candidate Name'}</h1>
+        <h1>\${resumeObj.name || 'Candidate Name'}</h1>
+        <div class="title">\${resumeObj.title || ''}</div>
         <div class="contact">
-          ${profile.phone || ''} | ${profile.email || ''} | ${profile.location || ''}
+          \${contactLine}
         </div>
         
         <h2>Professional Summary</h2>
-        <p>${tailoredData.summary}</p>
+        <p>\${resumeObj.summary || ''}</p>
         
-        <h2>Top Skills</h2>
-        <div class="skills">
-          ${tailoredData.skills.map(s => `<span class="skill">${s}</span>`).join('')}
-        </div>
+        <h2>Skills</h2>
+        \${skillsHtml}
         
-        <h2>Experience Highlights</h2>
-        <ul>
-          ${tailoredData.experience_bullets.map(b => `<li class="exp-bullet">${b}</li>`).join('')}
-        </ul>
+        <h2>Experience</h2>
+        \${expHtml}
+        
+        \${projectsHtml}
         
         <h2>Education</h2>
-        <p>${(tailoredData.education || profile.education_level || '').replace(/\n/g, '<br/>')}</p>
+        \${eduHtml}
+
+        \${awardsHtml}
       </body>
     </html>
-  `;
+  \`;
 }
 
 module.exports = { generatePdfFromHtml, buildResumeHtml };
