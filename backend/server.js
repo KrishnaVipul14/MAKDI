@@ -17,6 +17,7 @@ getDb().then(db => {
   app.use('/api/auth', require('./routes/auth'));
   app.use('/api/profile', require('./routes/profile'));
   app.use('/api/resume', require('./routes/resume'));
+  app.use('/api/session', require('./routes/session'));
   app.use('/api/jobs', require('./routes/jobs'));
   app.use('/api/tailor', require('./routes/tailor'));
   app.use('/api/applications', require('./routes/applications'));
